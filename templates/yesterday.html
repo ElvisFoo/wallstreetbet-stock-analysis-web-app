@@ -1,0 +1,68 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<table class='table table-hover mt-5'>
+    <thead>
+        <tr class='table-dark'>
+            <th class='col-3'>Ticker (For the previous day)</th>
+            <th>Number of comments</th>
+            <th>Sentiment</th>
+            <th>Sentiment score</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for stock in stocks %}
+        <tr>
+            <td><button type='button' class='btn' data-bs-toggle="modal" data-bs-target="#{{ stock.ticker }}-modal">{{ stock.ticker }}</button></td>
+            <td>{{ stock.no_of_comments }}</td>
+            <td><span class = 'sentiment'>{{ stock.sentiment }}</span></td>
+            <td><span class = 'sentiment'>{{ stock.sentiment_score }}</span></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% for stock in stocks %}
+<div class="modal fade" id="{{ stock.ticker }}-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">{{ stock.ticker }} Trend</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div class = 'container-fluid'>
+                <div class='row'>
+                    <div class='col'>
+                        <h3>Yesterday</h3>
+                        <div>Comments: {{ stock.no_of_comments }}</div>
+                        <div>Sentiment score: <span class='sentiment'>{{ stock.sentiment_score }}</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Open chart</button>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+{% endblock %}
+
+{% block script %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    let sentiments = document.getElementsByClassName('sentiment');
+    for (let sentiment of sentiments) {
+        if (parseFloat(sentiment.innerText) < 0 || sentiment.innerText == 'Bearish') {
+            sentiment.style.color = 'red';
+        }
+        else if (parseFloat(sentiment.innerText) > 0 || sentiment.innerText == 'Bullish') {
+            sentiment.style.color = 'green';
+        }
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<table class='table table-hover mt-5'>
+    <thead>
+        <tr class='table-dark'>
+            <th>Ticker</th>
+            <th>Number of comments</th>
+            <th>Sentiment</th>
+            <th>Sentiment score</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for stock in stocks %}
+        <tr>
+            <td><button type='button' class='btn' data-bs-toggle="modal" data-bs-target="#{{ stock.ticker }}-modal">{{ stock.ticker }}</button></td>
+            <td>{{ stock.no_of_comments }}</td>
+            <td><span class = 'sentiment'>{{ stock.sentiment }}</span></td>
+            <td><span class = 'sentiment'>{{ stock.sentiment_score }}</span></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% for stock in stocks %}
+<div class="modal fade" id="{{ stock.ticker }}-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">{{ stock.ticker }} Trend</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div class = 'container-fluid'>
+                <div class='row'>
+                    <div class='col'>
+                        <h3>Today</h3>
+                        <div>Comments: {{ stock.no_of_comments }}</div>
+                        <div>Sentiment score: <span class='sentiment'>{{ stock.sentiment_score }}</span></div>
+                        <h3 class='mt-3'>Yesterday</h3>
+                        {% for yesterday_stock in yesterday_stocks %}
+                            {% if yesterday_stock.ticker == stock.ticker %}
+                                <div>Comments: {{ yesterday_stock.no_of_comments }}</div>
+                                <div class='mb-3'>Sentiment score: <span class='sentiment'>{{ yesterday_stock.sentiment_score }}</span></div>
+                    </div>
+                        <div class='col d-flex flex-column align-items-center'>
+                            <h3 class='mt-5 mb-3'>Analysis</h3>
+                            <div class='d-flex align-items-center'>
+                                <span class='me-2'>Sentiment score:</span>
+                            {% set difference = stock.sentiment_score - yesterday_stock.sentiment_score %}
+                                {% if difference < 0 %}
+                                    <img src='https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Red_triangle.svg/1152px-Red_triangle.svg.png' width='18' height='18'>
+                                {% else %}
+                                    <img src='https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/5b74cca6-2ea8-4d05-b896-51cf36cc47f6/dc98reh-7aa740e0-2fc2-4d01-876b-9514e2561cd4.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzViNzRjY2E2LTJlYTgtNGQwNS1iODk2LTUxY2YzNmNjNDdmNlwvZGM5OHJlaC03YWE3NDBlMC0yZmMyLTRkMDEtODc2Yi05NTE0ZTI1NjFjZDQucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.5n1J-Xkl4DenzwRRkuY2l2DG26f-Kxgwy-rSLG0nd84' width='20' height='20'>
+                                {% endif %}
+                                {% if difference %}
+                                    <span class='sentiment'>{{ "%0.2f"| format(difference) }}</span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <a type="button" class="btn btn-primary" href='https://www.tradingview.com/chart/?symbol={{ stock.ticker }}' target='_blank'>Open chart</a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+{% endblock %}
+
+{% block script %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    let sentiments = document.getElementsByClassName('sentiment');
+    for (let sentiment of sentiments) {
+        if (parseFloat(sentiment.innerText) < 0 || sentiment.innerText == 'Bearish') {
+            sentiment.style.color = 'red';
+        }
+        else if (parseFloat(sentiment.innerText) > 0 || sentiment.innerText == 'Bullish') {
+            sentiment.style.color = 'green';
+        }
+    }
+});
+</script>
+{% endblock %}
